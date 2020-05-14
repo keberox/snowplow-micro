@@ -26,6 +26,7 @@ private [micro] final case class GoodEvent(
 /** A list of this case class is returned when /micro/bad is queried. */
 private [micro] final case class BadEvent(
   collectorPayload: Option[CollectorPayload],
+  rawEvent: Option[RawEvent],
   errors: List[String]
 )
 
