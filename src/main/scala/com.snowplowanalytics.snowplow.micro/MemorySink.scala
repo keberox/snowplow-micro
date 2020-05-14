@@ -69,8 +69,8 @@ private[micro] final case class MemorySink(resolver: Resolver) extends Sink {
                     extractEventInfo(rawEvent) match {
                       case Success(goodEvent) =>
                         (goodEvent :: good, bad)
-                      case Failure(error) =>
-                        val badEvent = BadEvent(Some(collectorPayload), Some(rawEvent), List(error))
+                      case Failure(errors) =>
+                        val badEvent = BadEvent(Some(collectorPayload), Some(rawEvent), errors)
                         (good, badEvent :: bad)
                     }
                 }
@@ -91,7 +91,7 @@ private[micro] final case class MemorySink(resolver: Resolver) extends Sink {
         ValidationCache.addToBad(List(bad))
     }
 
-  private[micro] def extractEventInfo(event: RawEvent): Validation[String, GoodEvent] =
+  private[micro] def extractEventInfo(event: RawEvent): Validation[List[String], GoodEvent] =
     EnrichmentManager.enrichEvent(EnrichmentReg, "micro", new DateTime(System.currentTimeMillis), event) match {
       case Success(enriched) =>
         Shredder.extractAndValidateCustomContexts(enriched) match {
@@ -100,9 +100,9 @@ private[micro] final case class MemorySink(resolver: Resolver) extends Sink {
             Success(GoodEvent(event, getEventType(event), Option(enriched.event), Some(contexts)))
           case Failure(f) =>
             // This failure should not happen because event has already passed enrichment.
-            Failure(s"Error while extracting custom contexts: $f")
+            Failure("Error while extracting custom contexts" :: f.list.map(_.toString))
         }
-      case Failure(f) => Failure(s"Error while validating the event: $f")
+      case Failure(f) => Failure("Error while validating the event" :: f.list)
     }
 
   /** Extract the event type of an event if any (in param "e"). */
