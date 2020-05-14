@@ -44,7 +44,7 @@ private[micro] final case class MemorySink(resolver: Resolver) extends Sink {
 
   /** Function of the [[Sink]] called for all the events received by a collector. */
   override def storeRawEvents(events: List[Array[Byte]], key: String) = {
-    events.foreach(bytes => processThriftBytes(bytes, resolver))
+    events.foreach(bytes => processThriftBytes(bytes))
     Nil
   }
 
@@ -55,8 +55,7 @@ private[micro] final case class MemorySink(resolver: Resolver) extends Sink {
     * A [[CollectorPayload]] can contain several events.
     */
   private[micro] def processThriftBytes(
-    thriftBytes: Array[Byte],
-    resolver: Resolver
+    thriftBytes: Array[Byte]
   ): Unit =
     ThriftLoader.toCollectorPayload(thriftBytes) match {
       case Success(maybePayload) =>
