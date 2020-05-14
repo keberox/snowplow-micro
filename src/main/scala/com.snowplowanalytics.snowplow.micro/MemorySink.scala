@@ -96,7 +96,7 @@ private[micro] final case class MemorySink(resolver: Resolver) extends Sink {
         Shredder.extractAndValidateCustomContexts(enriched) match {
           case Success(pairs) =>
             val contexts = pairs.map(_._1.toSchemaUri)
-            Success(GoodEvent(event, getEventType(event), Option(enriched.event), Some(contexts)))
+            Success(GoodEvent(event, getEventType(event), Option(enriched.event), Some(contexts), enriched))
           case Failure(f) =>
             // This failure should not happen because event has already passed enrichment.
             Failure("Error while extracting custom contexts" :: f.list.map(_.toString))
